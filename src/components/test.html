@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.21/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.21/"></script>
+    <style>
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 500px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="viewDiv"></div>
+
+
+
+    <script>
+
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/tasks/FindTask",
+            "esri/tasks/support/FindParameters",
+        ], function (Map, MapView, FindTask, FindParameters) {
+
+
+
+
+            const map = new Map({
+                basemap: "streets"
+            });
+
+            // 创建地图视图实例
+            const view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [-122.4194, 37.7749], // 地图中心点坐标（旧金山）
+                zoom: 13
+            });
+
+            // 创建 FindTask 实例，传入地图服务的 URL
+            const findTask = new FindTask("https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer");
+
+            // 设置查询参数
+            const findParams = new FindParameters();
+            findParams.layerIds = [0]; // 指定要查询的图层的 ID
+            findParams.searchFields = ["OBJECTID"]; // 指定要在哪些字段中进行查询
+            findParams.searchText = "1"; // 指定要搜索的关键字
+
+            // 执行查询
+            findTask.execute(findParams).then(function (response) {
+                // 查询成功，response 中包含满足条件的要素集合
+                const features = response.results;
+                console.log("满足条件的要素：", features);
+
+                // 在地图视图中高亮显示查询到的要素
+                view.graphics.removeAll();
+                features.forEach(function (feature) {
+                    view.graphics.add(feature.feature);
+                });
+            }).catch(function (error) {
+                // 查询失败
+                console.error("查询失败：", error);
+            });
+        })
+
+
+    </script>
+</body>
+
+</html>
